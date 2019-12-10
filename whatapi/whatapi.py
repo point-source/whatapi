@@ -20,22 +20,26 @@ class RequestException(Exception):
 
 
 class WhatAPI:
-    def __init__(self, config_file=None, username=None, password=None, cookies=None,
-                 server="https://ssl.what.cd", throttler=None):
+    def __init__(self, config_file=None, username=None, password=None, api_key=None,
+                  cookies=None, server="https://ssl.what.cd", throttler=None):
         self.session = requests.Session()
         self.session.headers = headers
         self.authkey = None
         self.passkey = None
         self.server = server
         self.throttler = Throttler(5, 10) if throttler is None else throttler
-        if config_file:
+        if api_key:
+            self.session.headers.update({'Authorization': api_key})
+            self._auth()
+            return
+        if username and password:
+            self.username = username
+            self.password = password
+        elif config_file:
             config = ConfigParser()
             config.read(config_file)
             self.username = config.get('login', 'username')
             self.password = config.get('login', 'password')
-        else:
-            self.username = username
-            self.password = password
         if cookies:
             self.session.cookies = cookies
             try:
