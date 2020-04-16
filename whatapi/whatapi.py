@@ -1,15 +1,17 @@
 try:
     from ConfigParser import ConfigParser
 except ImportError:
-    from configparser import ConfigParser # py3k support
-import requests
+    from configparser import ConfigParser  # py3k support
 import time
+
+import requests
 
 headers = {
     'Content-type': 'application/x-www-form-urlencoded',
     'Accept-Charset': 'utf-8',
     'User-Agent': 'whatapi [isaaczafuta]'
-    }
+}
+
 
 class LoginException(Exception):
     pass
@@ -20,8 +22,14 @@ class RequestException(Exception):
 
 
 class WhatAPI:
-    def __init__(self, config_file=None, username=None, password=None, api_key=None,
-                  cookies=None, server="https://ssl.what.cd", throttler=None):
+    def __init__(self,
+                 config_file=None,
+                 username=None,
+                 password=None,
+                 api_key=None,
+                 cookies=None,
+                 server="https://ssl.what.cd",
+                 throttler=None):
         self.session = requests.Session()
         self.session.headers = headers
         self.authkey = None
@@ -58,10 +66,11 @@ class WhatAPI:
     def _login(self):
         '''Logs in user'''
         loginpage = self.server + '/login.php'
-        data = {'username': self.username,
-                'password': self.password,
-                'keeplogged': 1,
-                'login': 'Login'
+        data = {
+            'username': self.username,
+            'password': self.password,
+            'keeplogged': 1,
+            'login': 'Login'
         }
         r = self.session.post(loginpage, data=data, allow_redirects=False)
         if r.status_code != 302:
@@ -81,7 +90,8 @@ class WhatAPI:
         if self.throttler:
             self.throttler.throttle_request()
         r = self.session.get(torrentpage, params=params, allow_redirects=False)
-        if r.status_code == 200 and 'application/x-bittorrent' in r.headers['content-type']:
+        if r.status_code == 200 and 'application/x-bittorrent' in r.headers[
+                'content-type']:
             return r if full_response else r.content
         return None
 
@@ -120,7 +130,8 @@ class Throttler(object):
     def throttle_request(self):
         request_time = time.time()
         if len(self.request_times) >= self.num_requests:
-            sleep_time = self.per_seconds - (request_time - self.request_times[0])
+            sleep_time = self.per_seconds - (request_time -
+                                             self.request_times[0])
             if sleep_time > 0:
                 time.sleep(sleep_time)
             self.request_times = self.request_times[1:]
